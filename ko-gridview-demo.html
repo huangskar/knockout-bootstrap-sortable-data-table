@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <script src="lodash.js"></script>
+    <script src="jquery.min.js"></script>
+    <script src="bootstrap.min.js"></script>
+    <script src="knockout.debug.js"></script>
+    <script src="knockout.mapping.min.js"></script>
+    <script src="ko-grid-templates.js"></script>
+    <script src="knockout-sortable-data-table.js"></script>
+    <style>
+        .pagination {
+            display: inline-block;
+            padding-left: 0;
+            margin-top:-2px;
+            border-radius: 4px;
+            float:right;
+        }
+    </style>
+
+</head>
+<body>
+<div style="width:80%; magin-left:30px; padding: 20px">
+    <table data-bind="dataTable: tableViewModel"><!-- --></table>
+</div>
+
+<script>
+    var vm;
+    var Address = function(data) {
+        self = this;
+        self.city = ko.observable(data);
+    };
+    var Person = function(data) {
+        self = this;
+        self.id    = ko.observable(data ? data.id : -1);
+        self.first = ko.observable(data ? data.first : "");
+        self.last  = ko.observable(data ? data.last : "");
+        self.age   = ko.observable(data ? data.age : 1);
+        self.full  = ko.computed(function() {
+            return this.first() + " " + this.last();
+        },self);
+        self.address = new Address(data ? data.address ? data.address.city : "" : "");
+    };
+
+    var data = [
+        { id: 1, first: "wallen", last: "Jardine", age: 86,
+            address : { city : "Beijing"}},
+        { id: 2, first: "tfBob", last: "Smith", age: 54,
+            address : { city : "Beijing"}},
+        { id: 3, first: "mark", last: "Jones", age: 32,
+            address : { city : "Beijing"}},
+        { id: 4, first: "wallen", last: "Jardine", age: 86,
+            address : { city : "Beijing"}},
+        { id: 5, first: "tfBob", last: "Smith", age: 54,
+            address : { city : "Beijing"}},
+        { id: 6, first: "mark", last: "Jones", age: 32,
+            address : { city : "Beijing"}},
+        { id: 7, first: "wallen", last: "Jardine", age: 86,
+            address : { city : "Beijing"}},
+        { id: 8, first: "tfBob", last: "Smith", age: 54,
+            address : { city : "Beijing"}},
+        { id: 9, first: "mark", last: "Jones", age: 32,
+            address : { city : "Beijing"}},
+        { id: 10, first: "wallen", last: "Jardine", age: 86,
+            address : { city : "Beijing"}},
+        { id: 11, first: "tfBob", last: "Smith", age: 54,
+            address : { city : "Beijing"}},
+        { id: 12, first: "mark", last: "Jones", age: 32,
+            address : { city : "Beijing"}},
+        { id: 13, first: "wallen", last: "Jardine", age: 86,
+            address : { city : "Beijing"}},
+        { id: 14, first: "tfBob", last: "Smith", age: 54,
+            address : { city : "TianJing"}},
+        { id: 15, first: "mark", last: "Jones", age: 32,
+            address : { city : "Beijing"}},
+        { id: 16, first: "wallen", last: "Jardine", age: 86,
+            address : { city : "Beijing"}},
+        { id: 17, first: "tfBob", last: "Smith", age: 54,
+            address : { city : "Beijing"}},
+        { id: 18, first: "mark", last: "Jones", age: 32,
+            address : { city : "Beijing"}},
+        { id: 19, first: "wallen", last: "Jardine", age: 86,
+            address : { city : "Beijing"}},
+        { id: 20, first: "tfBob", last: "Smith", age: 54,
+            address : { city : "Beijing"}},
+        { id: 21, first: "mark", last: "Jones", age: 32,
+            address : { city : "Beijing"}},
+        { id: 22, first: "wallen", last: "Jardine", age: 86,
+            address : { city : "Beijing"}},
+        { id: 23, first: "tfBob", last: "Smith", age: 54,
+            address : { city : "Beijing"}},
+        { id: 24, first: "mark", last: "Jones", age: 32,
+            address : { city : "Wuhan"}}
+    ];
+
+    $(function () {
+        var ExamplePageViewModel = function() {
+            var self = this;
+            self.getData = function (page, size, sortField, sortOrder, callback) {
+                var params = "?page.page=" + (page) + "&page.size=" + size
+                    + "&page.sort=" + sortField + "&page.sort.dir=" + sortOrder;
+                $.getJSON("/frameworks" + params, callback);
+            };
+
+            self.filterByAge = function(entity) {
+                var age = parseInt($("#txtAge").val());
+                if (isNaN(age)) return true;
+                return entity.age() > age;
+            };
+
+            self.formatterForId = function(data) {
+                return "Id : " + data;
+            };
+
+            self.search = function(entity) {
+                return entity.full().indexOf($("#txtSearch").val()) > -1;
+            }
+
+            self.tableViewModel = new ko.dataTable.ViewModel({
+                columns: [
+                    { header: "ID", field: "id",  width: "50px", columnType : "simple",
+                              dataType: "number", formatter : self.formatterForId,
+                              valueProvider: function(entity) {return entity.id();}
+                    },
+
+                    { header: "First Name", field: "first",  width: "50px", columnType: "link" },
+                    { header: "Last Name", field: "last",  width: "50px" },
+                    { header: "Age", field: "age", width: "50px" },
+                    { header: "Shipping Address", field: "address.city", width: "50px",
+                      valueProvider: function(entity){return entity.address.city();}}
+                ],
+                sortable: true,
+                defaultSortField: "first",
+                loader: self.getData,
+                pageSize: 10,
+                entityId : "id",
+                filters: [self.filterByAge],
+                search: self.search,
+                entityBuilder: Person,//The constructor for the entity class
+                items: data,
+                hasCheckboxColumn : true,
+                hasActionColumn: true,
+                hasToolbar: true
+            });
+        };
+        vm = new ExamplePageViewModel();
+        ko.applyBindings(vm);
+    });
+</script>
+</body>
+</html>

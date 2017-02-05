@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <script src="lodash.js"></script>
+    <script src="jquery.min.js"></script>
+    <script src="bootstrap.min.js"></script>
+    <script src="knockout.debug.js"></script>
+    <script src="knockout.mapping.min.js"></script>
+    <script src="ko-grid-templates.js"></script>
+    <script src="knockout-sortable-data-table.js"></script>
+    <style>
+        .pagination {
+            display: inline-block;
+            padding-left: 0;
+            margin-top:-2px;
+            border-radius: 4px;
+            float:right;
+        }
+    </style>
+
+</head>
+<body>
+<form id="form1">
+<div style="width:80%; magin-left:30px; padding: 20px">
+    <table data-bind="dataTable: tableViewModel"><!-- --></table>
+</div>
+</form>
+<script>
+    var vm;
+
+    var Category = function(data) {
+        self = this;
+        self.id    = ko.observable(data ? data.id : -1);
+        self.parent = ko.observable(data ? data.parent : 0);
+        self.name  = ko.observable(data ? data.name : "");
+        self.deep = ko.observable(data ? data.deep? data.deep : -1 : -1);
+        self.hasChildren = ko.observable(data ? data.hasChildren? data.hasChildren : false : false);
+        self.description = ko.observable(data ? data.description : "");
+        self.descents = [];
+        if (data.descents && data.descents.length) {
+            data.descents.forEach(function(id){
+                self.descents.push(id);
+            })
+        }
+    };
+
+    var data = [
+        { id: 1, parent: 0, name: "cat_1", description: "desc_1"},
+        { id: 2, parent: 0, name: "cat_2",description: "desc_2"},
+        { id: 3, parent: 1, name: "cat_3",description: "desc_3"},
+        { id: 11, parent: 1, name: "cat_1_1",description: "desc_1_1"},
+        { id: 111, parent: 11, name: "cat_1_1_1",description: "desc_1_1_1"},
+        { id: 1111, parent: 111, name: "cat_1_1_1_1",description: "desc_1_1_1_1"},
+        { id: 11111, parent: 1111, name: "cat_1_1_1_1_1",description: "desc_1_1_1_1_1"},
+        { id: 12, parent: 1, name: "cat_1_2",description: "desc_1_2"},
+        { id: 4, parent: 0, name: "cat_4",description: "desc_4"},
+        { id: 21, parent: 2, name: "cat_2_1",description: "desc_2_1"},
+        { id: 42, parent: 4, name: "cat_4_2",description: "desc_4_2"},
+        { id: 421, parent: 42, name: "cat_4_2_1",description: "desc_4_2_1"},
+        { id: 4211, parent: 421, name: "cat_4_2_1_1",description: "desc_4_2_1_1"},
+        { id: 4212, parent: 421, name: "cat_4_2_1_2",description: "desc_4_2_1_2"},
+        { id: 42121, parent: 4212, name: "cat_4_2_1_2_1",description: "wdesc_4_2_1_2_1"},
+        { id: 42122, parent: 4212, name: "cat_4_2_1_2_2",description: "desc_4_2_1_2_2"},
+        { id: 42123, parent: 4212, name: "cat_4_2_1_2_3",description: "desc_4_2_1_2_3"},
+        { id: 421231, parent: 42123, name: "cat_4_2_1_2_3_1",description: "desc_4_2_1_2_3_1"},
+        { id: 4212311, parent: 421231, name: "cat_4_2_1_2_3_1_1",description: "desc_4_2_1_2_3_1_1"}
+    ];
+
+
+    $(function () {
+        var ExamplePageViewModel = function() {
+            var self = this;
+            self.getData = function (page, size, sortField, sortOrder, callback) {
+                var params = "?page.page=" + (page) + "&page.size=" + size
+                    + "&page.sort=" + sortField + "&page.sort.dir=" + sortOrder;
+                $.getJSON("/frameworks" + params, callback);
+            };
+
+            self.filterByAge = function(entity) {
+//                var age = parseInt($("#txtAge").val());
+//                if (isNaN(age)) return true;
+//                return entity.age() > age;
+                  return true;
+            };
+
+            self.formatterForId = function(data) {
+                return "Id : " + data;
+            };
+
+            self.search = function(entity) {
+                return entity.name().indexOf($("#txtSearch").val()) > -1;
+            }
+
+            self.tableViewModel = new ko.dataTable.ViewModel({
+                columns: [
+                    { header: "Name", field: "name", columnType: "link", width: "150px"},
+                    { header: "Description", field: "description",  width: "50px" }
+                ],
+                sortable: true,
+                defaultSortField : "name",
+                loader: self.getData,
+                pageSize: 2,
+                entityId : "id",
+                filters: [self.filterByAge],
+                search: self.search,
+                entityBuilder: Category,//The constructor for the entity class
+                items: data,
+                hasCheckboxColumn : true,
+                hasActionColumn: false,
+                hasToolbar: false,
+                hierarchySort: true
+            });
+        };
+        vm = new ExamplePageViewModel();
+        ko.applyBindings(vm);
+    });
+</script>
+</body>
+</html>

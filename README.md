@@ -17,6 +17,12 @@ Knockout pageable and sortable data table
                   + "&page.sort=" + sortField + "&page.sort.dir=" + sortOrder;
                 $.getJSON("/frameworks" + params, callback);
             };
+
+            self.filterByAge = function(entity) {
+                return entity.age() > 30;
+            };
+
+
             self.tableViewModel = new ko.dataTable.ViewModel({
                 columns: [
                     { name: "FRAMEWORK", value: "name", sortField: "name", width: "150px" },
@@ -27,9 +33,14 @@ Knockout pageable and sortable data table
                 ],
                 sortable: true,
                 loader: self.getData,
-                pageSize: 10
+                pageSize: 10,
+                entityId : "id",
+                filters: [],
+                search: self.search,
+                entityBuilder: Person //The constructor for the entity class
             });
         };
+
         ko.applyBindings(new ExamplePageViewModel());
     });
 
